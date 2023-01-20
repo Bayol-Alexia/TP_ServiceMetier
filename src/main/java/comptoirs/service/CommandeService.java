@@ -63,7 +63,18 @@ public class CommandeService {
      */
     @Transactional
     public Commande enregistreExpédition(Integer commandeNum) {
-        // TODO : implémenter ce service métier
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        // On vérifie que la commande existe
+        var commande = commandeDao.findById(commandeNum).orElseThrow();
+        //Si la commande n'est pas envoyée, on met à jour la date d'expédition
+        //Si elle est envoyée on décrémente le stock
+        if (commande.getEvoyeele()==null){
+            commande.setEnvoyeele(LocalDate.now());
+        } else {
+            for (Ligne lig : commande.getLignes()){
+                Produit prod1 = lig.getProduit();
+                int prod2 = lig.getQuantite();
+            }
+        }
+        return commande;
     }
 }
