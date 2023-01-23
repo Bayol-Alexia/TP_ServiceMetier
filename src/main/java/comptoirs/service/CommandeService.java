@@ -1,6 +1,7 @@
 package comptoirs.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.springframework.stereotype.Service;
 
@@ -66,15 +67,18 @@ public class CommandeService {
         // On vérifie que la commande existe
         var commande = commandeDao.findById(commandeNum).orElseThrow();
         //Si la commande n'est pas envoyée, on met à jour la date d'expédition
-        //Si elle est envoyée on décrémente le stock
-        if (commande.getEvoyeele()==null){
+        //Puis on décrémente la quantité en stock de celle commandée
+        if (commande.getEnvoyeele() == null) {
             commande.setEnvoyeele(LocalDate.now());
-        } else {
-            for (Ligne lig : commande.getLignes()){
-                Produit prod1 = lig.getProduit();
-                int prod2 = lig.getQuantite();
+            var l = commande.getLignes();
+            for (int i = 0; i < l.size(); i++) {
+                var produit = l.get(i).getProduit();
+                var quantité = l.get(i).getQuantite();
+                produit.setUnitesEnStock(produit.getUnitesEnStock() - quantité);
             }
         }
+        commandeDao.save(commande);
         return commande;
     }
+
 }

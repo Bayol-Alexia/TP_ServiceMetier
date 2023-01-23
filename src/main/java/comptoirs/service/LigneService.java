@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Positive;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+
 @Service
 @Validated // Les contraintes de validatipn des méthodes sont vérifiées
 public class LigneService {
@@ -44,12 +45,24 @@ public class LigneService {
      *  @return la ligne de commande créée
      */
     @Transactional
-    Ligne ajouterLigne(Integer commandeNum, Integer produitRef, @Positive int quantite) {
+    Ligne ajouterLigne(Integer commandeNum, Integer produitRef, @Positive int quantite) throws Exception {
         //On vérifie que le produit existe
         var produit = produitDao.findById(produitRef).orElseThrow();
         //On vérifie que la commande existe
         var commande = commandeDao.findById(commandeNum).orElseThrow();
         //La commande ne doit pas être envoyée
-        if (commande.getEvoyeele()==null)
+        if (commande.getEnvoyeele()==null) throw new Exception("La commande a déjà été envoyée");
+        //La quantité doit être positive
+        if(produit.getIndisponible()) throw new Exception("La quantité demandée est supérieure à celle présente au stock");
+        //La quantité doit être positive
+        if(quantite < 0) throw new Exception("La quantité demandé n'est pas positive");
+        //Création d'une nouvelle ligne de commande
+        var l = new Ligne(commande, produit, quantite);
+        //Incrémentation de la quantité totale de commande avec la quantité à commander
+        var unitesCommandees = produit.getUnitesCommandees();
+        produit.setUnitesCommandees(unitesCommandees + quantite);
+
+        ligneDao.save(l);
+        return l;
     }
 }
